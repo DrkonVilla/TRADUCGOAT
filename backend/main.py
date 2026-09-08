@@ -176,6 +176,26 @@ def download_single_file(batch_id: str, file_id: str, db: Session = Depends(get_
         headers={"Content-Disposition": f'attachment; filename="{output_filename}"'}
     )
 
+from fastapi.responses import FileResponse
+
+@app.get("/api/file/{file_id}")
+def get_original_file(file_id: str, db: Session = Depends(get_db)):
+    """Devuelve el archivo original para previsualización."""
+    archivo = db.query(Archivo).filter(Archivo.id == file_id).first()
+    if not archivo or not archivo.nombre_traducido:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado.")
+    
+    file_path = Path(archivo.nombre_traducido)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="El archivo físico no existe en el servidor.")
+        
+    return FileResponse(
+        path=file_path,
+        filename=archivo.nombre_original,
+        media_type="application/pdf" if archivo.nombre_original.lower().endswith('.pdf') else "application/octet-stream",
+        content_disposition_type="inline"
+    )
+
 @app.get("/api/download-all/{batch_id}")
 def download_batch_zip(batch_id: str, db: Session = Depends(get_db)):
     """Descarga todo el lote de archivos traducidos comprimidos en un archivo .zip."""

@@ -359,7 +359,9 @@ with tab_preview:
                     col_m1.metric("Tiempo de Procesamiento", f"{selected_file.get('tiempo_procesamiento', 0)} seg")
                     col_m2.metric("Total Caracteres Traducidos", f"{selected_file.get('num_caracteres', 0)}")
                     col_m3.metric("Citas Bibliográficas Resaltadas", f"{num_citas}")
-                    col_m4.markdown(f"<div style='margin-top:15px;'><a href='{BACKEND_URL}/api/download-all/{batch_id_to_view}' target='_blank'><button style='background-color:#0284c7;color:white;border:none;padding:10px 16px;border-radius:6px;cursor:pointer;'>📦 Descargar Lote Completo (.ZIP)</button></a></div>", unsafe_allow_html=True)
+                    with col_m4:
+                        st.markdown("<div style='margin-top:28px;'></div>", unsafe_allow_html=True)
+                        st.link_button("📦 Descargar Lote Completo (.ZIP)", f"{BACKEND_URL}/api/download-all/{batch_id_to_view}", type="primary", use_container_width=True)
 
                     st.markdown("---")
                     col_left, col_right = st.columns(2)
@@ -367,7 +369,6 @@ with tab_preview:
                     with col_left:
                         st.markdown("### 📄 Texto Original")
                         st.markdown(f"<div class='text-box'>{orig_text if orig_text else 'Texto no disponible'}</div>", unsafe_allow_html=True)
-
                     with col_right:
                         st.markdown("### 🌐 Texto Traducido (Citas en Azul)")
                         st.markdown(f"<div class='text-box'>{highlighted_trans if highlighted_trans else 'Traducción no disponible'}</div>", unsafe_allow_html=True)
@@ -380,6 +381,22 @@ with tab_preview:
                         mime="text/plain",
                         type="primary"
                     )
+
+                    if selected_filename.lower().endswith('.pdf'):
+                        st.markdown("---")
+                        st.markdown("### 📄 Vista del PDF Original")
+                        pdf_url = f"{BACKEND_URL}/api/file/{selected_file['id']}"
+                        try:
+                            import base64
+                            pdf_res = requests.get(pdf_url)
+                            if pdf_res.status_code == 200:
+                                base64_pdf = base64.b64encode(pdf_res.content).decode('utf-8')
+                                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800px" type="application/pdf" style="border: 1px solid #e2e8f0; border-radius: 8px;"></iframe>'
+                                st.markdown(pdf_display, unsafe_allow_html=True)
+                            else:
+                                st.error("No se pudo cargar el PDF para previsualizar.")
+                        except Exception as e:
+                            st.error(f"Error cargando PDF: {str(e)}")
 
         except Exception as e:
             st.error(f"Error obteniendo previsualización: {str(e)}")
