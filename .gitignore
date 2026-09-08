@@ -1,0 +1,22 @@
+# Variables de entorno con claves secretas
+.env
+
+# Base de datos local SQLite
+*.db
+tradugoat.db
+
+# Archivos subidos temporalmente
+temp_uploads/
+
+# Python / Pycache
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+
+# IDE y Sistema Operativo
+.DS_Store
+.vscode/
+.idea/
